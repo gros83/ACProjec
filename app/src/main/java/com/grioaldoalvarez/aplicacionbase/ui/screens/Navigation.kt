@@ -6,7 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.grioaldoalvarez.aplicacionbase.movies
+import com.grioaldoalvarez.aplicacionbase.data.movies
 import com.grioaldoalvarez.aplicacionbase.ui.screens.detail.DetailScreen
 import com.grioaldoalvarez.aplicacionbase.ui.screens.home.HomeScreen
 

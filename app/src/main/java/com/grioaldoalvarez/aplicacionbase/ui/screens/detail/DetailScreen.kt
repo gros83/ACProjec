@@ -21,7 +21,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.grioaldoalvarez.aplicacionbase.Movie
+import com.grioaldoalvarez.aplicacionbase.data.Movie
 import com.grioaldoalvarez.aplicacionbase.R
 import com.grioaldoalvarez.aplicacionbase.ui.screens.home.Screen
 

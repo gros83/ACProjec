@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
@@ -18,6 +20,17 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        /*
+        Se tiene que hacer esta configuracion para poder leer el apiKey desde local.properties, importamos
+        Properties de java.util
+         */
+        val properties = Properties()
+        properties.load(project.rootProject.file("local.properties").readText().byteInputStream())
+        val tmdbApiKey = properties.getProperty("TMDB_API_KEY", "")
+
+        //Aqui agregamos un campo al buildConfig
+        buildConfigField("String", "TMDB_API_KEY", "\"$tmdbApiKey\"")
     }
 
     buildTypes {
@@ -38,6 +51,8 @@ android {
     }
     buildFeatures {
         compose = true
+        /*Para poder usar la clase BuildConfig se debe activar la siguiente bandera*/
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.11"
@@ -62,6 +77,9 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.play.services.location)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.kotlinx.serialization)
+    implementation(libs.kotlinx.serialization.json)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

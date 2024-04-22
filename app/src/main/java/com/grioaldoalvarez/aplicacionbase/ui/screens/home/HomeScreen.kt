@@ -3,6 +3,7 @@ package com.grioaldoalvarez.aplicacionbase.ui.screens.home
 import android.Manifest
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -26,16 +28,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import com.grioaldoalvarez.aplicacionbase.Movie
+import com.grioaldoalvarez.aplicacionbase.data.Movie
 import com.grioaldoalvarez.aplicacionbase.R
-import com.grioaldoalvarez.aplicacionbase.movies
 import com.grioaldoalvarez.aplicacionbase.ui.common.PermissionRequestEffect
 import com.grioaldoalvarez.aplicacionbase.ui.common.getRegion
 import com.grioaldoalvarez.aplicacionbase.ui.theme.AplicacionBaseTheme
@@ -55,12 +58,25 @@ fun Screen(content: @Composable () -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(onClick: (Movie) -> Unit) {
+fun HomeScreen(
+    onClick: (Movie) -> Unit,
+    /* viewModel() es una funcion remember con una funcion Composable, que lo que va a hacer es irse
+        a buscar al viewModelStoreOwner (Las activitis tienen un viewModelstoreOwner que es el que almacena
+        todos esos viewModels) entonces cuando se produce iun cambio de configuracion o un cambio de rotación
+        y se vuelve a llamar a la funcion viewModel() va a ir a buscarlo al viewModelStoreOwner, si ya existe
+        lo devuelve y si no existe se crea uno nuevo.
+        Se para como argumento porque si en los test se le quiere pasar un viewModelDistinto o si queremos pasarle
+        uno distinto en una preview, tenemos control sobre que ViewModel le podemos dar si queremos pasarle
+        un mock
+     */
+    vm: HomeViewModel = viewModel()
+) {
     // El contexto se toma aqui porque se debe de ejecutar dentro del contexto de Composable
     val ctx = LocalContext.current
     val appName = stringResource(id = R.string.app_name)
     var appBarTitle by remember { mutableStateOf(appName) }
     var coroutineScope = rememberCoroutineScope()
+    val state = vm.state
 
     PermissionRequestEffect(permission = Manifest.permission.ACCESS_COARSE_LOCATION) { granted ->
         if (granted) {
@@ -71,6 +87,7 @@ fun HomeScreen(onClick: (Movie) -> Unit) {
         } else {
             appBarTitle = "$appName (Permission denied)"
         }
+        vm.onUIReady()
     }
     Screen {
         val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
@@ -90,6 +107,18 @@ fun HomeScreen(onClick: (Movie) -> Unit) {
             // se muestre correctamente el elemento final y no lo tape la barra)
             contentWindowInsets = WindowInsets.safeDrawing
         ) { padding ->
+
+            if (state.loading) {
+                /*
+                Se muestra en un box para que lo centre, fill maxwidth para que ocupe todo el ancho
+                y se la pasa el padding que nos pasa el Scaffold para usar esa padding.
+                 */
+                Box(modifier = Modifier.fillMaxSize().padding(padding),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
             LazyVerticalGrid(
                 columns = GridCells.Adaptive(120.dp),
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -97,8 +126,8 @@ fun HomeScreen(onClick: (Movie) -> Unit) {
                 modifier = Modifier.padding(horizontal = 4.dp),
                 contentPadding = padding
             ) {
-                items(movies) { movie ->
-                    MovieItem(movie = movie, onClick = { onClick(movie)} )
+                items(state.movies, key = { it.id }) { it ->
+                    MovieItem(movie = it) { onClick(it) }
                 }
             }
         }
