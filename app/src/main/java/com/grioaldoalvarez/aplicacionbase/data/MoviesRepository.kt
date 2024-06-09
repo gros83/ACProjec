@@ -1,28 +1,36 @@
 package com.grioaldoalvarez.aplicacionbase.data
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
-import okhttp3.Dispatcher
-
 /**
  * Va a ser el acceso a la informacion de los datos relacionados
  * con las pelliculas.
  */
 class MoviesRepository {
     /*
-    Como delay es una funcion suspend necesitamos gestionar la corutina poniedo un launch o algo por el
-    estilo o si se quiere delegar esa gestion a una coapa superior. Lo que se debe hacer es declarar nuestra
-    funcion como suspend también. Eso quiere decir que esta funcion puede llamar otras funciones suspend adentro
-    porque al llamarla en algun momento va a tener que estar dentro de una corutina.
-    Si se quiere que esto no se ejecute en el hilo principal para que no se bloque el hilo principal
-    se invoca la función withContext y le decimos en que contexto queremos que se ejecute.
-    En este caso Dispatchers.IO
-    */
-    suspend fun fetchPopularMovies(): List<Movie> = withContext(Dispatchers.IO){
-        delay(2000)
-        // aqui ya no se usa un return ya que como es una lamba, el valor de retorno es la ultima
-        //linea(ultima expresion) de la lambda
-        movies
-    }
+        Ahora se hace uso de MoviesClient para consultar el servicio.
+
+     */
+    suspend fun fetchPopularMovies(region: String): List<Movie> =
+        MoviesClient
+            .instance
+            .fetchPopularMovies(region)
+            .results
+            /*
+                Aqui tenemos que hacer un mapeo del tipo de datos RemoteMovie a Movie con mappers
+                para eso vamos a usar la funcion map, para eso vamos a crear la funcion de extencion
+                toDomainModel
+             */
+            .map { it.toDomainModel() }
+
+    suspend fun findMovieById(id: Int): Movie =
+        MoviesClient
+            .instance
+            .fetchMovieById(id)
+            .toDomainModel()
 }
+
+private fun RemoteMovie.toDomainModel():Movie =
+    Movie(
+        id = id,
+        title = title,
+        poster = "https://image.tmdb.org/t/p/w185/$posterPath",
+    )

@@ -7,8 +7,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.grioaldoalvarez.aplicacionbase.data.Movie
 import com.grioaldoalvarez.aplicacionbase.data.MoviesRepository
-import com.grioaldoalvarez.aplicacionbase.data.movies
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 // Despues de que creamos el ViewModel el objetivo es sacar todo lo que podamos al ViewModel
@@ -27,12 +25,16 @@ class HomeViewModel : ViewModel() {
     // Solo se pone aqui por el nivel en el que estamos del curso
     private val repository = MoviesRepository()
 
-    fun onUIReady() {
+    /*
+    La region no la debe devolver la UI, En realidad debe haber un RegionRepository que sea capaz de devolvernos
+    la region. Entonces el repositorio de fetchPopularMovies pueda utilizar el repositorio del Region para recuperar
+     */
+    fun onUIReady(region: String) {
         viewModelScope.launch {
             state = UIState(loading = true)
             // Con el repository el viewModel ya no es el que decide de donde se estan sacando los datos
             // por que ahora eso lo hace el repository.
-            state = UIState(loading = false, movies = repository.fetchPopularMovies())
+            state = UIState(loading = false, movies = repository.fetchPopularMovies(region))
         }
     }
     data class UIState (

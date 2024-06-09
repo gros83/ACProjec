@@ -23,11 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -73,21 +69,14 @@ fun HomeScreen(
 ) {
     // El contexto se toma aqui porque se debe de ejecutar dentro del contexto de Composable
     val ctx = LocalContext.current
-    val appName = stringResource(id = R.string.app_name)
-    var appBarTitle by remember { mutableStateOf(appName) }
     var coroutineScope = rememberCoroutineScope()
     val state = vm.state
 
     PermissionRequestEffect(permission = Manifest.permission.ACCESS_COARSE_LOCATION) { granted ->
-        if (granted) {
-            coroutineScope.launch {
-                val region = ctx.getRegion()
-                appBarTitle = "$appName ($region)"
-            }
-        } else {
-            appBarTitle = "$appName (Permission denied)"
+        coroutineScope.launch {
+            val region = if (granted) ctx.getRegion() else "US"
+            vm.onUIReady(region)
         }
-        vm.onUIReady()
     }
     Screen {
         val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
@@ -95,7 +84,7 @@ fun HomeScreen(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text(text = appBarTitle) },
+                    title = { Text(text = stringResource(id = R.string.app_name)) },
                     scrollBehavior = scrollBehavior
                 )
             },

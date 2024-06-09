@@ -32,7 +32,7 @@ object MoviesClient {
         // Utilizamos el objeto Json de KotlinxSerialization, utilizamos la funcion de extension que nos da
         // el converter que hemos importado que es asConverterFactory y le tenemos que decir el tipo de datos
         // que va a utilizar que es "application/json" y hay que convertirlo a MediaType
-        .addConverterFactory(Json.asConverterFactory("application/json".toMediaType() ))
+        .addConverterFactory(json.asConverterFactory("application/json".toMediaType() ))
         .build()
         .create<MoviesService>()
 }
